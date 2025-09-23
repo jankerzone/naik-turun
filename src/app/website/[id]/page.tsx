@@ -11,11 +11,11 @@ import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatusGrid } from "@/components/status-grid";
 import { subDays, format, eachDayOfInterval, startOfDay } from "date-fns";
 
-export default function WebsiteDetailPage({
-  params,
-}: {
+type WebsiteDetailPageProps = {
   params: { id: string };
-}) {
+};
+
+export default function WebsiteDetailPage({ params }: WebsiteDetailPageProps) {
   const { id } = params;
   const [website, setWebsite] = useState<Website | null>(null);
   const [statusChecks, setStatusChecks] = useState<StatusCheck[]>([]);
