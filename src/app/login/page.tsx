@@ -33,7 +33,7 @@ export default function LoginPage() {
           supabaseClient={supabase}
           appearance={{ theme: ThemeSupa }}
           providers={[]}
-          theme="dark"
+          theme="light" {/* Changed theme to light */}
         />
       </div>
     </div>
