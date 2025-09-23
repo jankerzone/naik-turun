@@ -4,16 +4,15 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Website, StatusCheck } from "@/types";
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react"; // Import Loader2
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/stat-card";
 import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatusGrid } from "@/components/status-grid";
 import { subDays, format, eachDayOfInterval, startOfDay } from "date-fns";
 
-// Menggunakan { params: any } untuk melewati error type-checking yang salah pada Vercel
 export default function WebsiteDetailPage({ params }: { params: any }) {
-  const { id } = params; // Ambil id dari params
+  const { id } = params;
   const [website, setWebsite] = useState<Website | null>(null);
   const [statusChecks, setStatusChecks] = useState<StatusCheck[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,6 +148,10 @@ export default function WebsiteDetailPage({ params }: { params: any }) {
         <StatCard
           title="Current Status"
           value={website.last_status || "N/A"}
+        />
+        <StatCard
+          title="Monitoring Location"
+          value={website.monitoring_location || "N/A"}
         />
       </div>
 

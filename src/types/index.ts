@@ -7,6 +7,7 @@ export interface Website {
   last_latency: number | null;
   last_checked_at: string | null;
   interval: number;
+  monitoring_location: string | null;
 }
 
 export interface StatusCheck {
@@ -15,4 +16,5 @@ export interface StatusCheck {
   created_at: string;
   status: "Up" | "Down" | null;
   latency: number | null;
+  monitoring_location: string | null;
 }

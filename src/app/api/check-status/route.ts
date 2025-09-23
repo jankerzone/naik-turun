@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
 
@@ -22,16 +22,40 @@ export async function POST(request: Request) {
     const endTime = Date.now();
     const latency = endTime - startTime;
 
+    const geo = request.geo;
+    let monitoringLocation = "Unknown Location";
+    if (geo) {
+      const city = geo.city || "";
+      const region = geo.region || "";
+      const country = geo.country || "";
+      monitoringLocation = [city, region, country].filter(Boolean).join(", ");
+      if (!monitoringLocation) {
+        monitoringLocation = "Unknown Location";
+      }
+    }
+
     if (response.ok) {
-      return NextResponse.json({ status: "Up", latency });
+      return NextResponse.json({ status: "Up", latency, monitoringLocation });
     } else {
       return NextResponse.json({
         status: "Down",
         latency,
         statusCode: response.status,
+        monitoringLocation,
       });
     }
   } catch (error) {
-    return NextResponse.json({ status: "Down", latency: null });
+    const geo = request.geo;
+    let monitoringLocation = "Unknown Location";
+    if (geo) {
+      const city = geo.city || "";
+      const region = geo.region || "";
+      const country = geo.country || "";
+      monitoringLocation = [city, region, country].filter(Boolean).join(", ");
+      if (!monitoringLocation) {
+        monitoringLocation = "Unknown Location";
+      }
+    }
+    return NextResponse.json({ status: "Down", latency: null, monitoringLocation });
   }
 }

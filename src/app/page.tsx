@@ -87,6 +87,7 @@ export default function Home() {
           last_status: data.status,
           last_latency: data.latency,
           last_checked_at,
+          monitoring_location: data.monitoringLocation,
         })
         .match({ id: websiteToCheck.id });
 
@@ -94,6 +95,7 @@ export default function Home() {
         website_id: websiteToCheck.id,
         status: data.status,
         latency: data.latency,
+        monitoring_location: data.monitoringLocation,
       });
 
       setWebsites((current) =>
@@ -104,6 +106,7 @@ export default function Home() {
                 last_status: data.status,
                 last_latency: data.latency,
                 last_checked_at,
+                monitoring_location: data.monitoringLocation,
               }
             : site
         )
@@ -219,13 +222,14 @@ export default function Home() {
                   <TableHead>Status</TableHead>
                   <TableHead>Latency</TableHead>
                   <TableHead>Interval</TableHead>
+                  <TableHead>Location</TableHead> {/* New TableHead */}
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5}>
+                    <TableCell colSpan={6}> {/* Updated colSpan */}
                       <Skeleton className="h-10 w-full" />
                     </TableCell>
                   </TableRow>
@@ -262,6 +266,11 @@ export default function Home() {
                           : "N/A"}
                       </TableCell>
                       <TableCell>{site.interval / 60} min</TableCell>
+                      <TableCell> {/* New TableCell for Location */}
+                        {site.last_status === "Up" && site.monitoring_location
+                          ? site.monitoring_location
+                          : "N/A"}
+                      </TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
@@ -283,7 +292,7 @@ export default function Home() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={5}
+                      colSpan={6} {/* Updated colSpan */}
                       className="text-center text-muted-foreground py-12"
                     >
                       No websites are being monitored.
