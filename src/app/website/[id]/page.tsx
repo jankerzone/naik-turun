@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Website, StatusCheck } from "@/types";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react"; // Import Loader2
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/stat-card";
 import { ResponseTimeChart } from "@/components/response-time-chart";
@@ -107,15 +107,8 @@ export default function WebsiteDetailPage({ params }: { params: any }) {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-4">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-12 w-full" />
-        <div className="grid gap-4 md:grid-cols-3">
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-          <Skeleton className="h-24" />
-        </div>
-        <Skeleton className="h-80" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
