@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -28,7 +28,6 @@ import { Trash2, LogOut } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [websites, setWebsites] = useState<Website[]>([]);
@@ -46,7 +45,7 @@ export default function Home() {
       }
     };
     getUser();
-  }, [supabase, router]);
+  }, [router]);
 
   const fetchWebsites = useCallback(async () => {
     if (!user) return;
@@ -61,7 +60,7 @@ export default function Home() {
       setWebsites(data);
     }
     setLoading(false);
-  }, [supabase, user]);
+  }, [user]);
 
   useEffect(() => {
     if (user) {
@@ -113,7 +112,7 @@ export default function Home() {
         console.error("Failed to check status:", error);
       }
     },
-    [supabase]
+    []
   );
 
   const handleAddSite = async (url: string) => {
