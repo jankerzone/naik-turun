@@ -7,3 +7,11 @@ export interface Website {
   last_latency: number | null;
   last_checked_at: string | null;
 }
+
+export interface StatusCheck {
+  id: number;
+  website_id: string;
+  created_at: string;
+  status: "Up" | "Down" | null;
+  latency: number | null;
+}

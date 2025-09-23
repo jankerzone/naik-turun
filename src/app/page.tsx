@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { AddSiteDialog } from "@/components/add-site-dialog";
 import { Website } from "@/types";
@@ -203,7 +204,14 @@ export default function Home() {
                 ) : websites.length > 0 ? (
                   websites.map((site) => (
                     <TableRow key={site.id}>
-                      <TableCell className="font-medium">{site.url}</TableCell>
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/website/${site.id}`}
+                          className="hover:underline"
+                        >
+                          {site.url}
+                        </Link>
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant={
