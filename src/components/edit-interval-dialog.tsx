@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,7 +11,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -22,7 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -30,68 +27,50 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PlusCircle } from "lucide-react";
+import { Website } from "@/types";
 
 const formSchema = z.object({
-  url: z.string().url({ message: "Please enter a valid URL." }),
   interval: z.coerce.number().min(30),
 });
 
-interface AddSiteDialogProps {
-  onAddSite: (values: { url: string; interval: number }) => void;
+interface EditIntervalDialogProps {
+  website: Website | null;
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+  onUpdateInterval: (websiteId: string, interval: number) => void;
 }
 
-export function AddSiteDialog({ onAddSite }: AddSiteDialogProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function EditIntervalDialog({
+  website,
+  isOpen,
+  onOpenChange,
+  onUpdateInterval,
+}: EditIntervalDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      url: "",
-      interval: 60,
+    values: {
+      interval: website?.interval || 60,
     },
   });
 
+  if (!website) return null;
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    let fullUrl = values.url;
-    if (!/^https?:\/\//i.test(fullUrl)) {
-      fullUrl = `https://${fullUrl}`;
-    }
-    onAddSite({ url: fullUrl, interval: values.interval });
-    form.reset();
-    setIsOpen(false);
+    onUpdateInterval(website!.id, values.interval);
+    onOpenChange(false);
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Add Website
-        </Button>
-      </DialogTrigger>
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add a new website</DialogTitle>
-          <DialogDescription>
-            Enter the URL and check interval for the website you want to
-            monitor.
+          <DialogTitle>Edit Interval</DialogTitle>
+          <DialogDescription className="break-all">
+            Set a new check interval for {website.url}.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Website URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
             <FormField
               control={form.control}
               name="interval"
@@ -120,7 +99,7 @@ export function AddSiteDialog({ onAddSite }: AddSiteDialogProps) {
               )}
             />
             <DialogFooter>
-              <Button type="submit">Start Monitoring</Button>
+              <Button type="submit">Save Changes</Button>
             </DialogFooter>
           </form>
         </Form>

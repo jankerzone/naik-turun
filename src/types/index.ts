@@ -6,6 +6,7 @@ export interface Website {
   last_status: "Up" | "Down" | "Checking..." | null;
   last_latency: number | null;
   last_checked_at: string | null;
+  interval: number;
 }
 
 export interface StatusCheck {

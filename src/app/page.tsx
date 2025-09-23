@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { AddSiteDialog } from "@/components/add-site-dialog";
+import { EditIntervalDialog } from "@/components/edit-interval-dialog";
 import { Website } from "@/types";
 import {
   Card,
@@ -25,7 +26,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trash2, LogOut } from "lucide-react";
+import { Trash2, LogOut, Settings } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
@@ -33,6 +34,7 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [websites, setWebsites] = useState<Website[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingWebsite, setEditingWebsite] = useState<Website | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
@@ -69,58 +71,59 @@ export default function Home() {
     }
   }, [user, fetchWebsites]);
 
-  const checkStatus = useCallback(
-    async (websiteToCheck: Website) => {
-      try {
-        const response = await fetch("/api/check-status", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: websiteToCheck.url }),
-        });
-        const data = await response.json();
-        const last_checked_at = new Date().toISOString();
+  const checkStatus = useCallback(async (websiteToCheck: Website) => {
+    try {
+      const response = await fetch("/api/check-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: websiteToCheck.url }),
+      });
+      const data = await response.json();
+      const last_checked_at = new Date().toISOString();
 
-        await supabase
-          .from("websites")
-          .update({
-            last_status: data.status,
-            last_latency: data.latency,
-            last_checked_at,
-          })
-          .match({ id: websiteToCheck.id });
+      await supabase
+        .from("websites")
+        .update({
+          last_status: data.status,
+          last_latency: data.latency,
+          last_checked_at,
+        })
+        .match({ id: websiteToCheck.id });
 
-        await supabase
-          .from("status_checks")
-          .insert({
-            website_id: websiteToCheck.id,
-            status: data.status,
-            latency: data.latency,
-          });
+      await supabase.from("status_checks").insert({
+        website_id: websiteToCheck.id,
+        status: data.status,
+        latency: data.latency,
+      });
 
-        setWebsites((current) =>
-          current.map((site) =>
-            site.id === websiteToCheck.id
-              ? {
-                  ...site,
-                  last_status: data.status,
-                  last_latency: data.latency,
-                  last_checked_at,
-                }
-              : site
-          )
-        );
-      } catch (error) {
-        console.error("Failed to check status:", error);
-      }
-    },
-    []
-  );
+      setWebsites((current) =>
+        current.map((site) =>
+          site.id === websiteToCheck.id
+            ? {
+                ...site,
+                last_status: data.status,
+                last_latency: data.latency,
+                last_checked_at,
+              }
+            : site
+        )
+      );
+    } catch (error) {
+      console.error("Failed to check status:", error);
+    }
+  }, []);
 
-  const handleAddSite = async (url: string) => {
+  const handleAddSite = async ({
+    url,
+    interval,
+  }: {
+    url: string;
+    interval: number;
+  }) => {
     if (!user) return;
     const { data, error } = await supabase
       .from("websites")
-      .insert({ url, user_id: user.id })
+      .insert({ url, user_id: user.id, interval })
       .select();
 
     if (error) {
@@ -129,6 +132,23 @@ export default function Home() {
       const newWebsite = data[0];
       setWebsites((prev) => [...prev, newWebsite]);
       checkStatus(newWebsite);
+    }
+  };
+
+  const handleUpdateInterval = async (websiteId: string, interval: number) => {
+    const { error } = await supabase
+      .from("websites")
+      .update({ interval })
+      .match({ id: websiteId });
+
+    if (error) {
+      console.error("Error updating interval:", error);
+    } else {
+      setWebsites((prev) =>
+        prev.map((site) =>
+          site.id === websiteId ? { ...site, interval } : site
+        )
+      );
     }
   };
 
@@ -143,12 +163,21 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (websites.length > 0) {
-      const interval = setInterval(() => {
-        websites.forEach(checkStatus);
-      }, 30000);
-      return () => clearInterval(interval);
-    }
+    const timer = setInterval(() => {
+      websites.forEach((site) => {
+        const now = new Date();
+        const lastChecked = site.last_checked_at
+          ? new Date(site.last_checked_at)
+          : new Date(0);
+        const secondsSinceLastCheck = (now.getTime() - lastChecked.getTime()) / 1000;
+
+        if (secondsSinceLastCheck >= site.interval) {
+          checkStatus(site);
+        }
+      });
+    }, 5000); // This is the "tick" interval, it checks every 5 seconds if a site needs a status update.
+
+    return () => clearInterval(timer);
   }, [websites, checkStatus]);
 
   if (!user) {
@@ -179,8 +208,7 @@ export default function Home() {
           <CardHeader>
             <CardTitle>Monitored Websites</CardTitle>
             <CardDescription>
-              A list of your websites and their current status. Statuses refresh
-              every 30 seconds.
+              A list of your websites and their current status.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -190,7 +218,7 @@ export default function Home() {
                   <TableHead>Website</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Latency</TableHead>
-                  <TableHead>Last Checked</TableHead>
+                  <TableHead>Interval</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -233,12 +261,15 @@ export default function Home() {
                           ? `${site.last_latency} ms`
                           : "N/A"}
                       </TableCell>
-                      <TableCell>
-                        {site.last_checked_at
-                          ? new Date(site.last_checked_at).toLocaleString()
-                          : "Never"}
-                      </TableCell>
+                      <TableCell>{site.interval / 60} min</TableCell>
                       <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setEditingWebsite(site)}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
                         <Button
                           variant="ghost"
                           size="icon"
@@ -266,6 +297,12 @@ export default function Home() {
           </CardContent>
         </Card>
       </main>
+      <EditIntervalDialog
+        isOpen={!!editingWebsite}
+        onOpenChange={(open) => !open && setEditingWebsite(null)}
+        website={editingWebsite}
+        onUpdateInterval={handleUpdateInterval}
+      />
       <MadeWithDyad />
     </div>
   );
