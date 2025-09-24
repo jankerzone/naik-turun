@@ -18,3 +18,9 @@ export interface StatusCheck {
   latency: number | null;
   monitoring_location: string | null;
 }
+
+export interface DailyStatus {
+  date: string;
+  status: "Up" | "Down" | "NoData";
+  uptimePercentage: number | null;
+}

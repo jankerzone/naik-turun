@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Website, StatusCheck } from "@/types";
+import { Website, StatusCheck, DailyStatus } from "@/types"; // Import DailyStatus
 import Link from "next/link";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,20 +87,28 @@ export default function WebsiteDetailPage({ params }: { params: any }) {
     const checksByDay = statusChecks.reduce((acc, check) => {
       const day = format(startOfDay(new Date(check.created_at)), "yyyy-MM-dd");
       if (!acc[day]) {
-        acc[day] = [];
+        acc[day] = { up: 0, total: 0 };
       }
-      acc[day].push(check.status);
+      if (check.status === "Up") {
+        acc[day].up++;
+      }
+      acc[day].total++;
       return acc;
-    }, {} as Record<string, (string | null)[]>);
+    }, {} as Record<string, { up: number; total: number }>);
 
     return dateInterval.map((date) => {
       const dayKey = format(date, "yyyy-MM-dd");
-      const statuses = checksByDay[dayKey];
+      const dayStats = checksByDay[dayKey];
+      
       let status: "Up" | "Down" | "NoData" = "NoData";
-      if (statuses) {
-        status = statuses.includes("Down") ? "Down" : "Up";
+      let uptimePercentage: number | null = null;
+
+      if (dayStats && dayStats.total > 0) {
+        uptimePercentage = (dayStats.up / dayStats.total) * 100;
+        status = uptimePercentage === 100 ? "Up" : "Down";
       }
-      return { date: dayKey, status };
+
+      return { date: dayKey, status, uptimePercentage };
     });
   }, [statusChecks]);
 

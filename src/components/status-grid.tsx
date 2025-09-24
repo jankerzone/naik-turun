@@ -14,11 +14,7 @@ import {
   CardTitle,
 } from "./ui/card";
 import { cn } from "@/lib/utils";
-
-type DailyStatus = {
-  date: string;
-  status: "Up" | "Down" | "NoData";
-};
+import { DailyStatus } from "@/types"; // Import DailyStatus dari types
 
 interface StatusGridProps {
   dailyStatuses: DailyStatus[];
@@ -34,7 +30,7 @@ export function StatusGrid({ dailyStatuses }: StatusGridProps) {
       <CardContent>
         <TooltipProvider>
           <div className="grid grid-cols-10 gap-2">
-            {dailyStatuses.map(({ date, status }) => (
+            {dailyStatuses.map(({ date, status, uptimePercentage }) => (
               <Tooltip key={date}>
                 <TooltipTrigger asChild>
                   <div
@@ -48,7 +44,10 @@ export function StatusGrid({ dailyStatuses }: StatusGridProps) {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>
-                    {new Date(date).toLocaleDateString()}: {status}
+                    {new Date(date).toLocaleDateString()}
+                    {uptimePercentage !== null && uptimePercentage !== undefined
+                      ? `: ${uptimePercentage.toFixed(2)}% Uptime`
+                      : `: ${status}`}
                   </p>
                 </TooltipContent>
               </Tooltip>
