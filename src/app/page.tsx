@@ -222,14 +222,14 @@ export default function Home() {
                   <TableHead>Status</TableHead>
                   <TableHead>Latency</TableHead>
                   <TableHead>Interval</TableHead>
-                  <TableHead>Location</TableHead> {/* New TableHead */}
+                  <TableHead>Location</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={6}> {/* Updated colSpan */}
+                    <TableCell colSpan={6}>
                       <Skeleton className="h-10 w-full" />
                     </TableCell>
                   </TableRow>
@@ -266,7 +266,7 @@ export default function Home() {
                           : "N/A"}
                       </TableCell>
                       <TableCell>{site.interval / 60} min</TableCell>
-                      <TableCell> {/* New TableCell for Location */}
+                      <TableCell>
                         {site.last_status === "Up" && site.monitoring_location
                           ? site.monitoring_location
                           : "N/A"}
@@ -292,7 +292,7 @@ export default function Home() {
                 ) : (
                   <TableRow>
                     <TableCell
-                      colSpan={6} {/* Updated colSpan */}
+                      colSpan={6}
                       className="text-center text-muted-foreground py-12"
                     >
                       No websites are being monitored.
