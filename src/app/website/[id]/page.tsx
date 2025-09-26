@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, use } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Website, StatusCheck, DailyStatus } from "@/types"; // Import DailyStatus
 import Link from "next/link";
@@ -11,8 +11,8 @@ import { ResponseTimeChart } from "@/components/response-time-chart";
 import { StatusGrid } from "@/components/status-grid";
 import { subDays, format, eachDayOfInterval, startOfDay } from "date-fns";
 
-export default function WebsiteDetailPage({ params }: { params: any }) {
-  const { id } = params;
+export default function WebsiteDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [website, setWebsite] = useState<Website | null>(null);
   const [statusChecks, setStatusChecks] = useState<StatusCheck[]>([]);
   const [loading, setLoading] = useState(true);
