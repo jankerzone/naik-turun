@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo, use } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Website, StatusCheck, DailyStatus } from "@/types"; // Import DailyStatus
 import Link from "next/link";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatCard } from "@/components/stat-card";
 import { ResponseTimeChart } from "@/components/response-time-chart";
@@ -141,7 +141,18 @@ export default function WebsiteDetailPage({ params }: { params: Promise<{ id: st
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Link>
-        <h1 className="text-3xl font-bold break-all">{website.url}</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold break-all">{website.url}</h1>
+          <Link
+            href={website.url.startsWith('http') ? website.url : `http://${website.url}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center p-2 rounded-md hover:bg-muted transition-colors"
+            aria-label="Open website in new tab"
+          >
+            <ExternalLink className="h-5 w-5" />
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
